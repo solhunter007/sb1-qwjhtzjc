@@ -51,7 +51,7 @@ export function OverlaySelector({ overlays, selectedOverlay, onOverlaySelect }: 
               className={`flex-none w-40 p-2 border rounded-lg cursor-pointer transition-all ${
                 selectedOverlay === overlay.id
                   ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-blue-300'
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-white'
               }`}
               onClick={() => onOverlaySelect(overlay.id)}
             >
@@ -59,7 +59,7 @@ export function OverlaySelector({ overlays, selectedOverlay, onOverlaySelect }: 
                 <img
                   src={overlay.imageUrl}
                   alt={overlay.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform hover:scale-105"
                 />
               </div>
               <h3 className="font-medium text-gray-800 truncate text-sm">{overlay.name}</h3>
