@@ -7,11 +7,15 @@ interface AdminOverlayManagerProps {
   overlays: OverlayOption[];
   baseImages: BaseImage[];
   headerImage: string | null;
+  headerText: string;
+  contractAddress: string;
   onOverlayAdd: (overlay: OverlayOption) => void;
   onOverlayDelete: (overlayId: string) => void;
   onBaseImageAdd: (image: BaseImage) => void;
   onBaseImageDelete: (imageId: string) => void;
   onHeaderImageUpdate: (imageUrl: string) => void;
+  onHeaderTextUpdate: (text: string) => void;
+  onContractAddressUpdate: (address: string) => void;
 }
 
 type TabType = 'overlays' | 'baseImages' | 'settings';
@@ -20,16 +24,22 @@ export function AdminOverlayManager({
   overlays,
   baseImages,
   headerImage,
+  headerText,
+  contractAddress,
   onOverlayAdd,
   onOverlayDelete,
   onBaseImageAdd,
   onBaseImageDelete,
-  onHeaderImageUpdate
+  onHeaderImageUpdate,
+  onHeaderTextUpdate,
+  onContractAddressUpdate
 }: AdminOverlayManagerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overlays');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [newHeaderText, setNewHeaderText] = useState(headerText);
+  const [newContractAddress, setNewContractAddress] = useState(contractAddress);
 
   const validateImage = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -202,6 +212,35 @@ export function AdminOverlayManager({
     }
   }, [activeTab, name, description, isUploading]);
 
+  const handleSettingsUpdate = async () => {
+    try {
+      // Update header text
+      if (newHeaderText !== headerText) {
+        const { error: headerTextError } = await supabase
+          .from('settings')
+          .upsert({ key: 'header_text', value: newHeaderText });
+
+        if (headerTextError) throw headerTextError;
+        onHeaderTextUpdate(newHeaderText);
+      }
+
+      // Update contract address
+      if (newContractAddress !== contractAddress) {
+        const { error: contractAddressError } = await supabase
+          .from('settings')
+          .upsert({ key: 'contract_address', value: newContractAddress });
+
+        if (contractAddressError) throw contractAddressError;
+        onContractAddressUpdate(newContractAddress);
+      }
+
+      alert('Settings updated successfully!');
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      alert('Failed to update settings. Please try again.');
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6">Developer Options</h2>
@@ -243,45 +282,85 @@ export function AdminOverlayManager({
       {activeTab === 'settings' ? (
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-4">Header Image</h3>
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                {headerImage ? (
-                  <img src={headerImage} alt="Current header" className="w-full h-full object-cover rounded-lg" />
-                ) : (
-                  <ImageIcon className="w-8 h-8 text-gray-400" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">
-                  {headerImage ? 'Current header image' : 'No header image set'}
-                </p>
-              </div>
-            </div>
+            <h3 className="text-lg font-semibold mb-4">Header Settings</h3>
             
-            <div
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
-                isUploading
-                  ? 'border-gray-400 bg-gray-50'
-                  : 'border-gray-300 hover:border-blue-500'
-              }`}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileInput}
-                className="hidden"
-                id="headerImageInput"
-                disabled={isUploading}
-              />
-              <label htmlFor="headerImageInput" className={`cursor-pointer ${isUploading ? 'opacity-50' : ''}`}>
-                <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm font-medium text-gray-700">
-                  {isUploading ? 'Uploading...' : 'Drop new header image here or click to upload'}
-                </p>
+            {/* Header Text Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Header Text
               </label>
+              <input
+                type="text"
+                value={newHeaderText}
+                onChange={(e) => setNewHeaderText(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Enter header text"
+              />
+            </div>
+
+            {/* Contract Address Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Contract Address
+              </label>
+              <input
+                type="text"
+                value={newContractAddress}
+                onChange={(e) => setNewContractAddress(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Enter contract address"
+              />
+            </div>
+
+            {/* Save Settings Button */}
+            <button
+              onClick={handleSettingsUpdate}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Save Settings
+            </button>
+
+            <div className="mt-8">
+              <h4 className="text-md font-semibold mb-4">Header Image</h4>
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                  {headerImage ? (
+                    <img src={headerImage} alt="Current header" className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {headerImage ? 'Current header image' : 'No header image set'}
+                  </p>
+                </div>
+              </div>
+              
+              <div
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                  isUploading
+                    ? 'border-gray-400 bg-gray-50'
+                    : 'border-gray-300 hover:border-blue-500'
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileInput}
+                  className="hidden"
+                  id="headerImageInput"
+                  disabled={isUploading}
+                />
+                <label htmlFor="headerImageInput" className={`cursor-pointer ${isUploading ? 'opacity-50' : ''}`}>
+                  <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm font-medium text-gray-700">
+                    {isUploading ? 'Uploading...' : 'Drop new header image here or click to upload'}
+                  </p>
+                </label>
+              </div>
             </div>
           </div>
         </div>

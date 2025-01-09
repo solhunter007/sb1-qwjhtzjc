@@ -22,6 +22,8 @@ export default function App() {
   const [overlays, setOverlays] = useState<OverlayOption[]>([]);
   const [baseImages, setBaseImages] = useState<BaseImage[]>([]);
   const [headerImage, setHeaderImage] = useState<string | null>(null);
+  const [headerText, setHeaderText] = useState<string>('SHADOW CASTER v1.0');
+  const [contractAddress, setContractAddress] = useState<string>('');
 
   const handleReset = useCallback(() => {
     setImageState({
@@ -83,14 +85,19 @@ export default function App() {
         );
       }
 
+      // Fixed settings query
       const { data: settingsData, error: settingsError } = await supabase
         .from('settings')
-        .select('value')
-        .eq('key', 'header_image')
-        .single();
+        .select('*');
 
-      if (!settingsError && settingsData?.value) {
-        setHeaderImage(settingsData.value);
+      if (!settingsError && settingsData) {
+        const headerImageSetting = settingsData.find(s => s.key === 'header_image');
+        const headerTextSetting = settingsData.find(s => s.key === 'header_text');
+        const contractAddressSetting = settingsData.find(s => s.key === 'contract_address');
+        
+        if (headerImageSetting?.value) setHeaderImage(headerImageSetting.value);
+        if (headerTextSetting?.value) setHeaderText(headerTextSetting.value);
+        if (contractAddressSetting?.value) setContractAddress(contractAddressSetting.value);
       }
     };
 
@@ -104,7 +111,7 @@ export default function App() {
       <div className="min-h-screen bg-black font-dos flex items-center justify-center p-4">
         <div className="dos-card max-w-2xl w-full mx-auto text-center">
           <div className="dos-header mb-8">
-            <h1 className="text-2xl">SHADOW CASTER v1.0</h1>
+            <h1 className="text-2xl">{headerText}</h1>
           </div>
           
           <div className="space-y-6 p-4">
@@ -164,9 +171,14 @@ export default function App() {
                     className={isOverlayScreen ? 'w-6 h-6 mr-2 text-black' : 'w-8 h-8 mr-3 text-black'}
                   />
                 )}
-                <h1 className={`font-bold text-black ${isOverlayScreen ? 'text-xl' : 'text-2xl'}`}>
-                  SHADOW CASTER v1.0
-                </h1>
+                <div>
+                  <h1 className={`font-bold text-black ${isOverlayScreen ? 'text-xl' : 'text-2xl'}`}>
+                    {headerText}
+                  </h1>
+                  {!isOverlayScreen && contractAddress && (
+                    <p className="text-sm font-bold">CA: {contractAddress}</p>
+                  )}
+                </div>
               </button>
             </div>
             <button
@@ -186,11 +198,15 @@ export default function App() {
             overlays={overlays}
             baseImages={baseImages}
             headerImage={headerImage}
+            headerText={headerText}
+            contractAddress={contractAddress}
             onOverlayAdd={(overlay) => setOverlays((prev) => [overlay, ...prev])}
             onOverlayDelete={(id) => setOverlays((prev) => prev.filter(o => o.id !== id))}
             onBaseImageAdd={(image) => setBaseImages((prev) => [image, ...prev])}
             onBaseImageDelete={(id) => setBaseImages((prev) => prev.filter(i => i.id !== id))}
             onHeaderImageUpdate={setHeaderImage}
+            onHeaderTextUpdate={setHeaderText}
+            onContractAddressUpdate={setContractAddress}
           />
         ) : (
           <>
