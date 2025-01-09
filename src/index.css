@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'DOS';
+  src: url('https://cdn.jsdelivr.net/npm/perfect-dos-vga@0.1.0/dos.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@layer base {
+  body {
+    @apply bg-black text-green-500;
+    font-family: 'DOS', monospace;
+  }
+}
+
+@layer components {
+  .dos-button {
+    @apply px-4 py-2 bg-black border-2 border-green-500 text-green-500 hover:bg-green-900 transition-colors cursor-pointer;
+  }
+
+  .dos-input {
+    @apply bg-black border-2 border-green-500 text-green-500 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500;
+  }
+
+  .dos-card {
+    @apply bg-black border-2 border-green-500 p-4;
+  }
+
+  .dos-header {
+    @apply bg-green-500 text-black font-bold px-4 py-1 mb-4;
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
