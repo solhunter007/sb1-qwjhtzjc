@@ -4,8 +4,9 @@ import { OverlaySelector } from './components/OverlaySelector';
 import { ImageEditor } from './components/ImageEditor';
 import { AdminOverlayManager } from './components/AdminOverlayManager';
 import { BaseImageSelector } from './components/BaseImageSelector';
+import { Gallery } from './components/Gallery';
 import { ImageState, OverlayOption, BaseImage } from './types';
-import { Image, Settings, X, AlertCircle, Shield } from 'lucide-react';
+import { Image, Settings, X, AlertCircle, Shield, Trophy } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
   const [headerImage, setHeaderImage] = useState<string | null>(null);
   const [headerText, setHeaderText] = useState<string>('SHADOW CASTER v1.0');
   const [contractAddress, setContractAddress] = useState<string>('');
+  const [showGallery, setShowGallery] = useState(false);
 
   const handleReset = useCallback(() => {
     setImageState({
@@ -32,6 +34,7 @@ export default function App() {
       overlayId: null,
     });
     setShowAdmin(false);
+    setShowGallery(false);
   }, []);
 
   const signInAnonymously = async () => {
@@ -85,7 +88,6 @@ export default function App() {
         );
       }
 
-      // Fixed settings query
       const { data: settingsData, error: settingsError } = await supabase
         .from('settings')
         .select('*');
@@ -104,7 +106,7 @@ export default function App() {
     fetchData();
   }, []);
 
-  const isOverlayScreen = imageState.preview !== null && !showAdmin;
+  const isOverlayScreen = imageState.preview !== null && !showAdmin && !showGallery;
 
   if (!ageVerified) {
     return (
@@ -181,13 +183,22 @@ export default function App() {
                 </div>
               </button>
             </div>
-            <button
-              onClick={() => setShowPasswordModal(true)}
-              className="opacity-10 hover:opacity-100 transition-opacity"
-              title="Developer Options"
-            >
-              <Settings className="w-3 h-3 text-black" />
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowGallery(prev => !prev)}
+                className="dos-button bg-black text-green-500 hover:bg-green-900"
+                title="View Gallery"
+              >
+                <Trophy className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setShowPasswordModal(true)}
+                className="opacity-10 hover:opacity-100 transition-opacity"
+                title="Developer Options"
+              >
+                <Settings className="w-3 h-3 text-black" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -208,6 +219,8 @@ export default function App() {
             onHeaderTextUpdate={setHeaderText}
             onContractAddressUpdate={setContractAddress}
           />
+        ) : showGallery ? (
+          <Gallery />
         ) : (
           <>
             {!imageState.preview ? (
